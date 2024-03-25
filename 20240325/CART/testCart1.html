@@ -47,7 +47,14 @@
 <body>
     <h1>產品列表</h1>
     <div class="pds">
-
+        <!-- <a href="">
+            <div class="pd">
+                <div class="img">
+                    <img src="${data.img}" alt="">
+                </div>
+                <div class="name">${data.name}</div>
+            </div>
+        </a> -->
     </div>
 
     <a href="./testCart3.html">
@@ -83,12 +90,11 @@
                 node.innerHTML = `<a href="./testCart2.html?id=${data.id}">
         <div class="pd">
             <div class="img">
-                <img src="${data.img}" alt="" />
+                <img src="${data.img}" alt="">
                 </div>
                 <div class="name">${data.name}</div>
             </div>
-    </a>
-            `;
+    </a>`;
                 pds.append(node.children[0])
             });
         })();
