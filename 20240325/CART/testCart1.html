@@ -30,16 +30,16 @@
             .name {
                 font-size: 24px;
             }
+        }
 
-            .cart {
-                position: fixed;
-                right: 0;
-                bottom: 0;
-                font-size: 24px;
-                background-color: red;
-                color: #fff;
-                padding: 10px;
-            }
+        .cart {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            font-size: 24px;
+            background-color: red;
+            color: #fff;
+            padding: 10px;
         }
     </style>
 </head>
@@ -85,7 +85,7 @@
 
         (async () => {
             datas = await getData();
-            data.forEach(data => {
+            datas.forEach(data => {
                 let node = document.createElement("div");
                 node.innerHTML = `<a href="./testCart2.html?id=${data.id}">
         <div class="pd">
