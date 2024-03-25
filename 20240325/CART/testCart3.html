@@ -40,6 +40,15 @@
         .total {
             font-size: 24px;
             text-align: right;
+        }
+        .old{
+            color: #777;
+            text-decoration: line-through;
+            margin-right: 10px;
+        }
+        .new{
+            color: red;
+            font-size: 36px;
 
         }
     </style>
@@ -61,7 +70,7 @@
     </div>
     <div class="total">9999</div>
     <div class="coupons">
-        <div class="coupon">
+        <div class="coupon" cid="0">
             <input type="radio" name="coupon" id="c0" checked>
             <label for="c0">不使用優惠卷</label>
         </div>
@@ -78,6 +87,7 @@
         const divCoupons = document.querySelector(".coupons");
         const divTotal = document.querySelector(".total");
         let totalMoney = 0;
+        let couponDatas;
         let cartAry = JSON.parse(localStorage.getItem("html5API-cart"));
         if (!cartAry) {
             cartAry = [];
@@ -106,7 +116,7 @@
                 let item = cartAry.find(pd => pd.id === id);
                 const amountCart = item.amount;
                 const money = amountCart * price;
-                let totalMoney = parseInt(divTotal.innerHTML);
+                // let totalMoney = parseInt(divTotal.innerHTML);
                 totalMoney -= money;
                 totalMoney += price * amount;
                 divTotal.innerHTML = totalMoney;
@@ -121,6 +131,28 @@
                 localStorage.setItem("html5API-cart", JSON.stringify(cartAry));
                 initPage();
             };
+        })
+
+        divCoupons.addEventListener("change", e => {
+            let divCoupon = e.target.closest(".coupon");
+            const cid = parseInt(divCoupon.getAttribute("cid", 10));
+            // couponDatas
+            if (cid === 0) {
+                discount = 1;
+                divTotal.innerHTML = `${totalMoney}`
+                return false;
+            }
+            const coupon = couponDatas.find(c => c.id === cid);
+            discount = coupon.Discount;
+            let newTotalMoney;
+            if (discount < 0) {
+                newTotalMoney = totalMoney + discount;
+            } else {
+                newTotalMoney = totalMoney * (1 - discount);
+            }
+            divTotal.innerHTML = `
+            <span class="old">${totalMoney}</span><span class="new">${newTotalMoney}</span>
+            `
         })
 
         let getData = () => {
@@ -150,7 +182,7 @@
         let initPage = async () => {
             let datas = await getData()
             // console.log(datas);
-            let totalMoney = 0;
+            totalMoney = 0;
             divPds.innerHTML = "";
             cartAry.forEach(item => {
                 let node = document.createElement("div");
@@ -173,19 +205,17 @@
         };
 
         let initCoupons = async () => {
-            let datas = await getCouponsData();
-            divCoupons.innerHTML = `<div class="coupon">
+            couponDatas = await getCouponsData();
+            divCoupons.innerHTML = `<div class="coupon" cid="0">
             <input type="radio" name="coupon" id="c0" checked>
             <label for="c0">不使用優惠卷</label>
         </div>`;
-            datas.forEach((c, index) => {
+            couponDatas.forEach((c, index) => {
                 let node = document.createElement("div");
                 let disabled = ""
                 if (index === 1) {
                     if (totalMoney < 1000) {
-                        disabled = "disabled"
-                    } else if (totalMoney >= 1000) {
-                        disabled = ""
+                        disabled = "disabled";
                     }
                 }
                 node.innerHTML = `<div class="coupon" cid="${c.id}">
