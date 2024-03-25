@@ -34,6 +34,7 @@
             .money {
                 margin-left: auto;
             }
+
         }
 
         .total {
@@ -57,34 +58,68 @@
             <div><button type="button" class="btn-update">修改</button></div>
             <div><button type="button" class="btn-del">刪除</button></div>
         </div> -->
-        <div class="total">9999</div>
-        <div class="coupons">
-            <div class="coupon">
-                <input type="radio" name="coupon" id="c0" checked>
-                <label for="c0">不使用優惠卷</label>
-            </div>
-            <!-- <div class="coupon" cid="1">
+    </div>
+    <div class="total">9999</div>
+    <div class="coupons">
+        <div class="coupon">
+            <input type="radio" name="coupon" id="c0" checked>
+            <label for="c0">不使用優惠卷</label>
+        </div>
+        <!-- <div class="coupon" cid="1">
                 <input type="radio" name="coupon" id="c1">
                 <label for="c1">全館八折</label>
             </div> -->
-        </div>
-
-
     </div>
+
+
+
     <script>
         const divPds = document.querySelector(".pds");
         const divCoupons = document.querySelector(".coupons");
         const divTotal = document.querySelector(".total");
+        let totalMoney = 0;
         let cartAry = JSON.parse(localStorage.getItem("html5API-cart"));
         if (!cartAry) {
             cartAry = [];
         }
 
-        divPds.addEventListener("click", e =>{
-            if(e.target.classList.contains("btn-update")){
-                console.log(e.target.getAttribute("pid"));
-            }else if(e.target.classList.contains("btn-del")){
-
+        divPds.addEventListener("click", e => {
+            if (e.target.classList.contains("btn-update")) {
+                // console.log(e.target.getAttribute("pid"));
+                const divPd = e.target.closest(".pd")
+                const id = parseInt(e.target.getAttribute("pid"));
+                let amount = parseInt(divPd.querySelector("input[name=amount]").value);
+                // console.log(amount);
+                if (amount <= 0) {
+                    divPd.querySelector(".btn-del").click();
+                    return false;
+                }
+                // 修改的第一種
+                // let item = cartAry.find(pd => pd.id === id);
+                // item.amount = amount;
+                // // 寫入 localStorage
+                // localStorage.setItem("html5API-cart", JSON.stringify(cartAry));
+                // // 重新整理購物車區塊
+                // initPage();
+                // 修改的第二種
+                const price = parseInt(divPd.getAttribute("price"));
+                let item = cartAry.find(pd => pd.id === id);
+                const amountCart = item.amount;
+                const money = amountCart * price;
+                let totalMoney = parseInt(divTotal.innerHTML);
+                totalMoney -= money;
+                totalMoney += price * amount;
+                divTotal.innerHTML = totalMoney;
+                item.amount = amount;
+                localStorage.setItem("html5API-cart", JSON.stringify(cartAry));
+                const divMoney = divPd.querySelector(".money");
+                divMoney.innerHTML = price * amount;
+                initCoupons();
+            } else if (e.target.classList.contains("btn-del")) {
+                const id = parseInt(e.target.getAttribute("pid"));
+                cartAry = cartAry.filter(pd => pd.id !== id)
+                localStorage.setItem("html5API-cart", JSON.stringify(cartAry));
+                initPage();
             };
         })
 
@@ -120,13 +155,13 @@
             cartAry.forEach(item => {
                 let node = document.createElement("div");
                 const itemData = datas.find(pd => pd.id === item.id);
-                node.innerHTML = `<div class="pd">
+                node.innerHTML = `<div class="pd" pid="${item.id}" price="${itemData.price}">
             <div class="img">
                 <img src="${itemData.img}" alt="">
             </div>
             <div class="name">${itemData.name}</div>
             <div class="price">${itemData.price}</div>
-            <div><input type="number" name="amount" value="0">${item.amount}</div>
+            <div><input type="number" name="amount" value="${item.amount}"></div>
             <div><button type="button" pid="${item.id}" class="btn-update">修改</button></div>
             <div><button type="button" pid="${item.id}" class="btn-del">刪除</button></div>
             <div class="money">${itemData.price * item.amount}</div>
@@ -139,7 +174,27 @@
 
         let initCoupons = async () => {
             let datas = await getCouponsData();
-            console.log(datas);
+            divCoupons.innerHTML = `<div class="coupon">
+            <input type="radio" name="coupon" id="c0" checked>
+            <label for="c0">不使用優惠卷</label>
+        </div>`;
+            datas.forEach((c, index) => {
+                let node = document.createElement("div");
+                let disabled = ""
+                if (index === 1) {
+                    if (totalMoney < 1000) {
+                        disabled = "disabled"
+                    } else if (totalMoney >= 1000) {
+                        disabled = ""
+                    }
+                }
+                node.innerHTML = `<div class="coupon" cid="${c.id}">
+                <input type="radio" name="coupon" id="c${index + 1}" ${disabled}>
+                <label for="c${index + 1}">${c.title}</label>
+            </div>`;
+                divCoupons.append(node.children[0])
+            });
+            // console.log(datas);
         };
 
         initPage();
